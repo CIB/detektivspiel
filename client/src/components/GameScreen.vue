@@ -13,11 +13,27 @@ export default class GameScreen extends Vue {
   @Prop() private msg!: string;
 
   open: boolean = true;
+  connection: any;
+
+  created() {
+    this.connection = require("socket.io-client")("/", { path: "/napi" });
+    this.connection.on("doorOpen", (value: any) => {
+      this.open = value;
+    });
+  }
 
   clicked() {
     this.open = !this.open;
+    this.connection.emit("toggleDoor", this.open);
   }
 }
+
+// this.connection.on("connect", () => {
+//   this.connection.emit("createRoom");
+// });
+// this.connection.on("createdRoom", (data: any) => {
+//   console.log("created room", data);
+// });
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
