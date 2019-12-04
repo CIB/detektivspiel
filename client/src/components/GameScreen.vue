@@ -1,15 +1,19 @@
 <template>
   <div class="hello">
-    <img v-if="doorOpen" src="../assets/door_open.png" @click="clicked" />
-    <img v-else src="../assets/door_closed.png" @click="clicked" />
+    <PixiCanvas></PixiCanvas>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { GameState } from './gamestate.store'
+import PixiCanvas from './PixiCanvas.vue'
 
-@Component
+@Component({
+  components: {
+    PixiCanvas,
+  },
+})
 export default class GameScreen extends Vue {
   @Prop() private msg!: string
 
@@ -38,4 +42,22 @@ export default class GameScreen extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+@keyframes example {
+  from {
+    background-image: url('../assets/door_open.png');
+  }
+  to {
+    background-image: url('../assets/door_open.png');
+  }
+}
+
+/* The element to apply the animation to */
+.door {
+  width: 100px;
+  height: 100px;
+  animation-name: example;
+  animation-duration: 4s;
+  background-image: url('../assets/door_open.png');
+}
+</style>

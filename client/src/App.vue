@@ -5,20 +5,20 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import GameScreen from "./components/GameScreen.vue";
+import { Component, Vue } from 'vue-property-decorator'
+import GameScreen from './components/GameScreen.vue'
 
 @Component({
   components: {
-    GameScreen
-  }
+    GameScreen,
+  },
 })
 export default class App extends Vue {}
 </script>
 
 <style lang="scss">
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
