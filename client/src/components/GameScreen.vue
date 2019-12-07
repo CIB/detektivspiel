@@ -1,6 +1,11 @@
 <template>
   <div class="hello">
-    <PixiCanvas></PixiCanvas>
+    <PixiCanvas
+      v-if="playerTwo !== null"
+      @phoneClicked="phoneClicked"
+      :phoneRinging="doorOpen"
+      :playerTwo="playerTwo"
+    ></PixiCanvas>
   </div>
 </template>
 
@@ -18,6 +23,8 @@ export default class GameScreen extends Vue {
   @Prop() private msg!: string
 
   open: boolean = true
+  phoneRinging: boolean = false
+  playerTwo: boolean = null
   connection: any
 
   get gameState(): GameState {
@@ -30,12 +37,20 @@ export default class GameScreen extends Vue {
 
   created() {
     this.connection = require('socket.io-client')('/', { path: '/napi' })
-    this.connection.on('doorOpen', (value: boolean) => {
+    this.connection.on('playerTwo', (value: boolean) => {
+      console.log('playerTwo', value)
+      this.playerTwo = value
       this.$store.commit('gamestate/toggleDoor', value)
+    })
+    this.connection.on('phoneRinging', (value: boolean) => {
+      this.$store.commit('gamestate/toggleDoor', value)
+    })
+    this.connection.on('connect', () => {
+      this.connection.emit('startGame')
     })
   }
 
-  clicked() {
+  phoneClicked() {
     this.connection.emit('toggleDoor', !this.doorOpen)
   }
 }

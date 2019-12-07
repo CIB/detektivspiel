@@ -11,16 +11,19 @@ const people: socketio.Socket[] = []
 let doorOpen = false
 
 io.on('connection', function(socket: socketio.Socket) {
-    people.push(socket)
-    console.log('new connection from', socket.id)
-    socket.emit('doorOpen', doorOpen)
+    socket.on('startGame', () => {
+        people.push(socket)
+        console.log('playerTwo', people.length > 1)
+        socket.emit('playerTwo', people.length > 1)
+        socket.emit('phoneRinging', doorOpen)
 
-    socket.on('toggleDoor', value => {
-        console.log('toggleDoor', value)
-        doorOpen = value
-        for (let person of people) {
-            person.emit('doorOpen', doorOpen)
-        }
+        socket.on('toggleDoor', value => {
+            console.log('toggleDoor', value)
+            doorOpen = value
+            for (let person of people) {
+                person.emit('phoneRinging', doorOpen)
+            }
+        })
     })
 })
 
