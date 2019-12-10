@@ -39,8 +39,8 @@ export default class GameScreen extends Vue {
       console.log('playerTwo', value)
       this.playerTwo = value
     })
-    this.connection.on('phoneRinging', (value: boolean) => {
-      this.$store.commit('gamestate/togglePhone', value)
+    this.connection.on('synchronizeState', ([action, value]: [string, any]) => {
+      this.$store.commit(`gamestate/${action}`, value)
     })
     this.connection.on('connect', () => {
       this.connection.emit('startGame')
@@ -48,7 +48,11 @@ export default class GameScreen extends Vue {
   }
 
   phoneClicked() {
-    this.connection.emit('togglePhone', !this.phoneRinging)
+    this.emit('togglePhone', !this.phoneRinging)
+  }
+
+  emit(action: string, value: any) {
+    this.connection.emit('synchronizeState', [action, value])
   }
 }
 </script>
