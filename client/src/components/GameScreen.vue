@@ -3,7 +3,6 @@
     <PixiCanvas
       v-if="playerTwo !== null"
       @phoneClicked="phoneClicked"
-      :phoneRinging="doorOpen"
       :playerTwo="playerTwo"
     ></PixiCanvas>
   </div>
@@ -23,7 +22,6 @@ export default class GameScreen extends Vue {
   @Prop() private msg!: string
 
   open: boolean = true
-  phoneRinging: boolean = false
   playerTwo: boolean = null
   connection: any
 
@@ -31,8 +29,8 @@ export default class GameScreen extends Vue {
     return this.$store.state.gamestate
   }
 
-  get doorOpen(): boolean {
-    return this.gameState.doorOpen
+  get phoneRinging(): boolean {
+    return this.gameState.phoneRinging
   }
 
   created() {
@@ -40,10 +38,9 @@ export default class GameScreen extends Vue {
     this.connection.on('playerTwo', (value: boolean) => {
       console.log('playerTwo', value)
       this.playerTwo = value
-      this.$store.commit('gamestate/toggleDoor', value)
     })
     this.connection.on('phoneRinging', (value: boolean) => {
-      this.$store.commit('gamestate/toggleDoor', value)
+      this.$store.commit('gamestate/togglePhone', value)
     })
     this.connection.on('connect', () => {
       this.connection.emit('startGame')
@@ -51,7 +48,7 @@ export default class GameScreen extends Vue {
   }
 
   phoneClicked() {
-    this.connection.emit('toggleDoor', !this.doorOpen)
+    this.connection.emit('togglePhone', !this.phoneRinging)
   }
 }
 </script>

@@ -1,19 +1,19 @@
 import Vuex from 'vuex'
 
 export interface GameState {
-  doorOpen: boolean
+  phoneRinging: boolean
 }
 
 const gameStateDefault: GameState = {
-  doorOpen: false,
+  phoneRinging: false,
 }
 
 export const gamestate = {
   namespaced: true,
   state: gameStateDefault,
   mutations: {
-    toggleDoor(state: GameState, value: boolean) {
-      state.doorOpen = value
+    togglePhone(state: GameState, value: boolean) {
+      state.phoneRinging = value
     },
   },
 }

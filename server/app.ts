@@ -8,20 +8,20 @@ let http = require('http').Server(app)
 let io = require('socket.io')(http, { path: '/napi' }) as socketio.Server
 
 const people: socketio.Socket[] = []
-let doorOpen = false
+let phoneRinging = false
 
 io.on('connection', function(socket: socketio.Socket) {
     socket.on('startGame', () => {
         people.push(socket)
         console.log('playerTwo', people.length > 1)
         socket.emit('playerTwo', people.length > 1)
-        socket.emit('phoneRinging', doorOpen)
+        socket.emit('phoneRinging', phoneRinging)
 
-        socket.on('toggleDoor', value => {
-            console.log('toggleDoor', value)
-            doorOpen = value
+        socket.on('togglePhone', value => {
+            console.log('phoneRinging', value)
+            phoneRinging = value
             for (let person of people) {
-                person.emit('phoneRinging', doorOpen)
+                person.emit('phoneRinging', phoneRinging)
             }
         })
     })
