@@ -1,10 +1,22 @@
 <template>
-  <div class="hello">
-    <PixiCanvas
-      v-if="playerTwo !== null"
-      @phoneClicked="phoneClicked"
-      :playerTwo="playerTwo"
-    ></PixiCanvas>
+  <div class="screen">
+    <div class="container">
+      <PixiCanvas
+        v-if="playerTwo !== null"
+        @phoneClicked="phoneClicked"
+        :playerTwo="playerTwo"
+      ></PixiCanvas>
+      <SpeechBox
+        v-if="!phoneRinging"
+        class="speech-box"
+        msg="Hello! I'm a talking telephone! Click on me now!"
+      ></SpeechBox>
+      <SpeechBox
+        v-if="phoneRinging"
+        class="speech-box"
+        msg="Ring ring! Ring ring! Ring! Ringa-ding! Ring ring ring!"
+      ></SpeechBox>
+    </div>
   </div>
 </template>
 
@@ -12,10 +24,12 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { GameState } from './gamestate.store'
 import PixiCanvas from './PixiCanvas.vue'
+import SpeechBox from './SpeechBox.vue'
 
 @Component({
   components: {
     PixiCanvas,
+    SpeechBox,
   },
 })
 export default class GameScreen extends Vue {
@@ -59,21 +73,23 @@ export default class GameScreen extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-@keyframes example {
-  from {
-    background-image: url('../assets/door_open.png');
-  }
-  to {
-    background-image: url('../assets/door_open.png');
-  }
+.screen {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
-/* The element to apply the animation to */
-.door {
-  width: 100px;
-  height: 100px;
-  animation-name: example;
-  animation-duration: 4s;
-  background-image: url('../assets/door_open.png');
+.container {
+  position: relative;
+  width: 1600px;
+  height: 800px;
+}
+
+.speech-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 </style>
