@@ -2,7 +2,7 @@
   <div class="dialog-box">
     <div class="speaker">
       <img class="avatar" src="../assets/kleinesTelefon_0000.png" />
-      <div class="speaker-name">Telephone</div>
+      <div class="speaker-name">Telefon</div>
     </div>
     <div class="text-content">
       <span>{{ shownMessage }}</span
@@ -88,5 +88,8 @@ export default class SpeechBox extends Vue {
   flex-direction: row;
   align-items: center;
   justify-content: top;
+
+  user-select: none;
+  pointer-events: none;
 }
 </style>
