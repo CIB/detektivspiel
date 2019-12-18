@@ -27,6 +27,7 @@ const assets = {
 @Component
 export default class PixiCanvas extends Vue {
   @Prop() playerTwo: boolean
+  @Prop() showingBookWindow: boolean
 
   app: Application
   tracker: {
@@ -116,6 +117,71 @@ export default class PixiCanvas extends Vue {
     }
   }
 
+  addBookEntry(resources: Partial<Record<string, LoaderResource>>) {
+    const graphics = new Graphics()
+    graphics.beginFill(0xffffff)
+    graphics.drawRect(220, 300, 150, 100)
+    graphics.interactive = true
+    graphics.cursor = 'pointer'
+    graphics.on('pointerdown', () => {
+      console.log('hello world!')
+    })
+    this.app.stage.addChild(graphics)
+  }
+
+  addBookWindow(resources: Partial<Record<string, LoaderResource>>) {
+    const window = new Graphics()
+    window.beginFill(0xffffff)
+    window.drawRect(200, 300, 1200, 700)
+    window.interactive = true
+    window.zIndex = 15
+    this.app.stage.addChild(window)
+
+    const bookColors = [
+      0xff3bc1,
+      0x05ff8f,
+      0x8f9119,
+      0x878aad,
+      0x00ff1e,
+      0xdb9839,
+    ]
+    let i = 0
+    for (let bookColor of bookColors) {
+      const book = new Graphics()
+      book.x = 335 + i * 190
+      book.y = 640
+      book.beginFill(bookColor)
+      book.drawRect(-75, -200, 150, 400)
+      book.interactive = true
+      book.on('pointerover', function() {
+        console.log('test')
+        this.y -= 20
+      })
+      book.on('pointerout', function() {
+        console.log('test')
+        this.y += 20
+      })
+      book.on('pointerdown', function(event) {
+        this.dragging = true
+        this.data = event.data
+        this.alpha = 0.5
+      })
+      book.on('pointerup', function() {
+        this.dragging = false
+        this.alpha = 1
+      })
+      book.on('pointermove', function() {
+        if (this.dragging) {
+          const newPosition = this.data.getLocalPosition(this.parent)
+          this.position.x = newPosition.x
+          this.position.y = newPosition.y
+        }
+      })
+      i++
+      this.app.stage.addChild(book)
+    }
+  }
+
   drawCanvas() {
     let cvs = document.getElementById('cvs') as HTMLCanvasElement
     cvs.width = 1600
@@ -131,6 +197,8 @@ export default class PixiCanvas extends Vue {
       .load((loader, resources) => {
         this.setRoom(resources)
         this.addPhone(resources)
+        this.addBookEntry(resources)
+        this.addBookWindow(resources)
 
         let i = 0
         this.app.ticker.add(() => {

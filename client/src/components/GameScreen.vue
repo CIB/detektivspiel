@@ -5,6 +5,7 @@
         v-if="playerTwo !== null"
         @phoneClicked="phoneClicked"
         :playerTwo="playerTwo"
+        :showingBookWindow="showingBookWindow"
       ></PixiCanvas>
       <SpeechBox
         v-if="!phoneRinging"
@@ -38,6 +39,7 @@ export default class GameScreen extends Vue {
   open: boolean = true
   playerTwo: boolean = null
   connection: any
+  showingBookWindow = false
 
   get gameState(): GameState {
     return this.$store.state.gamestate
