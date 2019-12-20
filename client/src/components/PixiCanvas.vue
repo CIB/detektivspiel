@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { GameState } from './gamestate.store'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Container } from 'pixi.js'
 import { Application } from 'pixi.js'
 import { Sprite, AnimatedSprite } from 'pixi.js'
@@ -14,7 +14,7 @@ import { Graphics } from 'pixi.js'
 import { Filter } from 'pixi.js'
 import { Matrix } from 'pixi.js'
 import { LoaderResource } from 'pixi.js'
-import { keys, range, toPairs } from 'lodash'
+import { keys, range, toPairs, clone, sortBy } from 'lodash'
 
 const assets = {
   atelier: require('../assets/Atelier.png'),
@@ -33,7 +33,8 @@ export default class PixiCanvas extends Vue {
   tracker: {
     room?: Sprite
     phone?: AnimatedSprite
-  } = {}
+    bookWindow: Container[]
+  } = { bookWindow: [] }
 
   mounted() {
     this.drawCanvas()
@@ -41,6 +42,15 @@ export default class PixiCanvas extends Vue {
 
   get gamestate(): GameState {
     return this.$store.state.gamestate
+  }
+
+  @Watch('showingBookWindow')
+  onToggleBookWindow() {
+    if (this.showingBookWindow) {
+      this.addBookWindow()
+    } else {
+      this.removeBookWindow()
+    }
   }
 
   setRoom(resources: Partial<Record<string, LoaderResource>>) {
@@ -118,24 +128,34 @@ export default class PixiCanvas extends Vue {
   }
 
   addBookEntry(resources: Partial<Record<string, LoaderResource>>) {
+    if (!this.playerTwo) {
+      return
+    }
     const graphics = new Graphics()
     graphics.beginFill(0xffffff)
     graphics.drawRect(220, 300, 150, 100)
     graphics.interactive = true
     graphics.cursor = 'pointer'
     graphics.on('pointerdown', () => {
-      console.log('hello world!')
+      this.$emit('bookWindowOpened')
     })
     this.app.stage.addChild(graphics)
   }
 
-  addBookWindow(resources: Partial<Record<string, LoaderResource>>) {
+  addBookWindow() {
+    if (!this.showingBookWindow) {
+      return
+    }
+
+    const instance = this
     const window = new Graphics()
+    let dragging = false
     window.beginFill(0xffffff)
     window.drawRect(200, 300, 1200, 700)
     window.interactive = true
     window.zIndex = 15
     this.app.stage.addChild(window)
+    this.tracker.bookWindow.push(window)
 
     const bookColors = [
       0xff3bc1,
@@ -145,41 +165,101 @@ export default class PixiCanvas extends Vue {
       0x00ff1e,
       0xdb9839,
     ]
+    const bookPositions = range(0, 6).map(i => ({
+      x: 335 + i * 190,
+      y: 640,
+    }))
+    const books = { items: [] }
+    function setBookPositions() {
+      let i = 0
+      for (let book of books.items) {
+        book.x = bookPositions[i].x
+        book.y = bookPositions[i].y
+        i++
+      }
+    }
     let i = 0
     for (let bookColor of bookColors) {
-      const book = new Graphics()
-      book.x = 335 + i * 190
-      book.y = 640
+      const book: Graphics & {
+        bookIndex?: number
+        originalIndex?: number
+      } = new Graphics()
+      book.cursor = 'pointer'
+      book.bookIndex = book.originalIndex = i
+      books.items.push(book)
+      this.tracker.bookWindow.push(book)
       book.beginFill(bookColor)
       book.drawRect(-75, -200, 150, 400)
       book.interactive = true
       book.on('pointerover', function() {
-        console.log('test')
-        this.y -= 20
+        console.log(this.bookIndex)
+        if (!dragging) {
+          this.y -= 20
+          this.movedY = 20
+        }
       })
       book.on('pointerout', function() {
         console.log('test')
-        this.y += 20
+        if (!dragging) {
+          this.y += this.movedY
+          this.movedY = 0
+        }
       })
       book.on('pointerdown', function(event) {
+        dragging = true
         this.dragging = true
         this.data = event.data
         this.alpha = 0.5
       })
       book.on('pointerup', function() {
+        dragging = false
         this.dragging = false
         this.alpha = 1
+        setBookPositions()
       })
       book.on('pointermove', function() {
+        // this.x += 5
         if (this.dragging) {
           const newPosition = this.data.getLocalPosition(this.parent)
-          this.position.x = newPosition.x
-          this.position.y = newPosition.y
+          this.x = newPosition.x
+          this.y = newPosition.y
+
+          let newBookIndex = Math.round((this.x - 335) / 190)
+          newBookIndex = Math.max(newBookIndex, 0)
+          newBookIndex = Math.min(newBookIndex, 5)
+
+          console.log('new', newBookIndex)
+
+          if (newBookIndex !== this.bookIndex) {
+            // Swap this book with the book at the new index
+            const otherBook = books.items[newBookIndex]
+            otherBook.bookIndex = this.bookIndex
+            this.bookIndex = newBookIndex
+
+            books.items = sortBy(books.items, ['bookIndex'])
+            setBookPositions()
+            this.x = newPosition.x
+            this.y = newPosition.y
+            this.movedY = 0
+
+            instance.$emit(
+              'sortBooks',
+              books.items.map(book => book.originalIndex)
+            )
+          }
         }
       })
       i++
       this.app.stage.addChild(book)
     }
+    setBookPositions()
+  }
+
+  removeBookWindow() {
+    for (let item of this.tracker.bookWindow) {
+      this.app.stage.removeChild(item)
+    }
+    this.tracker.bookWindow = []
   }
 
   drawCanvas() {

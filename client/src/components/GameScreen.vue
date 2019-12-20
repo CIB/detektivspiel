@@ -4,19 +4,24 @@
       <PixiCanvas
         v-if="playerTwo !== null"
         @phoneClicked="phoneClicked"
+        @sortBooks="sortBooks"
+        @bookWindowOpened="bookWindowOpened"
         :playerTwo="playerTwo"
-        :showingBookWindow="showingBookWindow"
+        :showingBookWindow="showingBookWindow && playerTwo"
       ></PixiCanvas>
       <SpeechBox
-        v-if="!phoneRinging"
+        v-if="dialogActivated && playerTwo"
         class="speech-box"
-        msg="Hello! I'm a talking telephone! Click on me now!"
+        msg="Hallo, ich bin ein sprechendes Telefon, und finde es toll, dass du das Rätsel gelöst hast!"
       ></SpeechBox>
       <SpeechBox
-        v-if="phoneRinging"
+        v-if="dialogActivated && !playerTwo"
         class="speech-box"
-        msg="Ring ring! Ring ring! Ring! Ringa-ding! Ring ring ring!"
+        msg="Freude, jemand im anderen Raum hat das Rätsel gelöst!"
       ></SpeechBox>
+      <div class="note-container" v-if="!dialogActivated && !playerTwo">
+        <div class="note-box">Kehre die Reihenfolge der Bücher um.</div>
+      </div>
     </div>
   </div>
 </template>
@@ -49,6 +54,10 @@ export default class GameScreen extends Vue {
     return this.gameState.phoneRinging
   }
 
+  get dialogActivated(): boolean {
+    return this.gameState.dialogActivated
+  }
+
   created() {
     this.connection = require('socket.io-client')('/', { path: '/napi' })
     this.connection.on('playerTwo', (value: boolean) => {
@@ -65,6 +74,15 @@ export default class GameScreen extends Vue {
 
   phoneClicked() {
     this.emit('togglePhone', !this.phoneRinging)
+  }
+
+  sortBooks(bookOrder: number[]) {
+    console.log('see', bookOrder)
+    this.emit('sortBooks', bookOrder)
+  }
+
+  bookWindowOpened() {
+    this.showingBookWindow = true
   }
 
   emit(action: string, value: any) {
@@ -93,5 +111,25 @@ export default class GameScreen extends Vue {
   top: 0;
   left: 0;
   z-index: 10;
+}
+
+.note-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.note-box {
+  margin-top: 800px;
+  margin-left: 400px;
+  padding: 20px 10px 10px 10px;
+
+  font-family: 'Ruge Boogie', cursive;
+  font-size: 50px;
+  text-align: left;
+  background-color: #f7cf52;
+  border-radius: 100%/50% 0 30px 30px;
+  box-shadow: 0px 3px 0px white;
 }
 </style>
